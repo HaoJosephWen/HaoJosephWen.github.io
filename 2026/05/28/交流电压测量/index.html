@@ -267,7 +267,21 @@
 <p>基于第 2.4 节推导的完整 RMS 计算公式，本节设计一套与之匹配的嵌入式软件架构。核心挑战在于：公式涉及逐点平方累加和浮点开根号等重度运算，若在中断中直接执行将阻塞高优先级任务；同时 ADC 高速采样与 RMS 低速计算之间存在数量级的速率差异。为此，采用<strong>三级流水线 + 双缓冲隔离 + 中断-任务分离</strong>的三层设计策略，实现采集与计算的解耦</p>
 </blockquote>
 <h3 id="3-1-三级流水线"><a href="#3-1-三级流水线" class="headerlink" title="3.1 三级流水线"></a>3.1 三级流水线</h3><p>采用<strong>硬件自动采样 → 周期中断搬运 → 非实时任务计算</strong>三级流水线，将高速采集、中速聚合与低速计算解耦。各级速率逐级递减，形成天然的数据漏斗：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">graph TB</span><br><span class="line">    subgraph &quot;第一级：硬件自动采样&quot;</span><br><span class="line">        A[&quot;多通道ADC&lt;br/&gt;连续转换+扫描模式&quot;] --&gt; B[&quot;DMA循环搬运&lt;br/&gt;外设→内存自动传输&quot;]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    subgraph &quot;第二级：周期中断搬运&quot;</span><br><span class="line">        C[&quot;周期定时中断&quot;] --&gt; E[&quot;交流通道：逐点存储&quot;]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    subgraph &quot;第三级：非实时任务计算&quot;</span><br><span class="line">        G[&quot;交流任务：RMS计算&quot;] --&gt; H[&quot;输出结构体&quot;]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    B --&gt;|&quot;共享采样数组&quot;| C</span><br><span class="line">    E --&gt;|&quot;逐点存储缓冲区&quot;| G</span><br></pre></td></tr></table></figure>
+<pre class="mermaid">graph TB
+    subgraph "第一级：硬件自动采样"
+        A["多通道ADC<br/>连续转换+扫描模式"] --> B["DMA循环搬运<br/>外设→内存自动传输"]
+    end
+    
+    subgraph "第二级：周期中断搬运"
+        C["周期定时中断"] --> E["交流通道：逐点存储"]
+    end
+    
+    subgraph "第三级：非实时任务计算"
+        G["交流任务：RMS计算"] --> H["输出结构体"]
+    end
+    
+    B -->|"共享采样数组"| C
+    E -->|"逐点存储缓冲区"| G</pre>
 
 <h3 id="3-2-双缓冲隔离与中断-任务分离原则"><a href="#3-2-双缓冲隔离与中断-任务分离原则" class="headerlink" title="3.2 双缓冲隔离与中断-任务分离原则"></a>3.2 双缓冲隔离与中断-任务分离原则</h3><ul>
 <li>主累加缓冲区（中断写入）与计算缓冲区（任务读取）物理分离，周期到期时批量复制，避免中断与任务并发访问导致数据撕裂.</li>
