@@ -54,9 +54,69 @@
 
   
 
-  <script class="next-config" data-name="mermaid" type="application/json">{"enable":true,"theme":{"light":"default","dark":"dark"},"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.1/mermaid.min.js","integrity":"sha256-BmQmdWDS8X2OTbrwELWK366LV6escyWhHHe0XCTU/Hk="}}</script>
-  <script src="/js/third-party/tags/mermaid.js" defer></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 等待 mermaid 加载完成
+      function waitForMermaid(callback) {
+        if (typeof mermaid !== 'undefined') {
+          callback();
+        } else {
+          setTimeout(function() { waitForMermaid(callback); }, 100);
+        }
+      }
+      
+      waitForMermaid(function() {
+        // 查找所有 Mermaid 代码块（多种可能的选择器）
+        var selectors = [
+          'pre code.language-mermaid',
+          'pre .mermaid',
+          '.highlight .mermaid',
+          'pre[data-lang="mermaid"] code'
+        ];
+        
+        var elements = [];
+        selectors.forEach(function(sel) {
+          var found = document.querySelectorAll(sel);
+          found.forEach(function(el) {
+            elements.push(el);
+          });
+        });
+        
+        // 去重
+        var uniqueElements = [];
+        elements.forEach(function(el) {
+          if (uniqueElements.indexOf(el) === -1) {
+            uniqueElements.push(el);
+          }
+        });
+        
+        if (uniqueElements.length === 0) return;
+        
+        // 替换代码块为 mermaid 容器
+        uniqueElements.forEach(function(element) {
+          var pre = element.closest('pre');
+          if (!pre) return;
+          
+          var code = element.textContent || element.innerText;
+          
+          var container = document.createElement('div');
+          container.className = 'mermaid';
+          container.textContent = code;
+          
+          pre.parentNode.replaceChild(container, pre);
+        });
+        
+        // 初始化并渲染
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'default'
+        });
+        
+        mermaid.run();
+      });
+    });
+  </script>
 
 
 

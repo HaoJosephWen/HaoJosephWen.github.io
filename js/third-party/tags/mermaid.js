@@ -1,6 +1,6 @@
 /* global NexT, CONFIG, mermaid */
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('page:loaded', async () => {
   const mermaidElements = document.querySelectorAll('pre > .mermaid');
   if (mermaidElements.length) {
     await NexT.utils.getScript(CONFIG.mermaid.js, {
