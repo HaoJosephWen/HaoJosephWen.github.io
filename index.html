@@ -262,9 +262,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2026-05-28 03:52:22 / 修改时间：04:01:44" itemprop="dateCreated datePublished" datetime="2026-05-28T03:52:22+08:00">2026-05-28</time>
+      <time title="创建时间：2026-05-28 03:52:22" itemprop="dateCreated datePublished" datetime="2026-05-28T03:52:22+08:00">2026-05-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-05-29 00:05:09" itemprop="dateModified" datetime="2026-05-29T00:05:09+08:00">2026-05-29</time>
     </span>
 
   
@@ -300,7 +306,7 @@
 </tr>
 <tr>
 <td align="left">邮箱</td>
-<td align="left"><a href="mailto:&#x32;&#55;&#x33;&#x35;&#x36;&#x34;&#53;&#52;&#51;&#52;&#x40;&#x71;&#113;&#46;&#99;&#111;&#x6d;">2735645434@qq.com</a></td>
+<td align="left"><a href="mailto:&#50;&#x37;&#x33;&#53;&#54;&#x34;&#x35;&#52;&#51;&#x34;&#64;&#x71;&#113;&#x2e;&#99;&#x6f;&#x6d;">2735645434@qq.com</a></td>
 <td align="left">政治面貌</td>
 <td align="left">中共党员</td>
 </tr>
@@ -312,92 +318,14 @@
 </tr>
 </tbody></table>
 <hr>
-<h2 id="教育背景"><a href="#教育背景" class="headerlink" title="教育背景"></a>教育背景</h2><p><strong>福州大学</strong> | 电子信息（电气工程与自动化学院）| 硕士</p>
-<ul>
-<li>时间：2021.09 - 2024.06</li>
-<li>主修课程：伺服工程、线性系统理论、非线性系统优化理论及应用、自适应控制、控制系统CAD、DSP技术应用等</li>
-</ul>
-<p><strong>黄山学院</strong> | 自动化（机电工程学院）| 本科</p>
-<ul>
-<li>时间：2017.09 - 2021.06</li>
-<li>主修课程：电路分析基础、数字电子技术、模拟电子技术、微控制器技术、自动控制原理、现代控制理论等</li>
-</ul>
-<hr>
-<h2 id="主要技能"><a href="#主要技能" class="headerlink" title="主要技能"></a>主要技能</h2><ul>
-<li><strong>熟悉 C、Python 语言</strong>：C 语言用于 STM32&#x2F;GD32 单片机底层驱动与应用开发，Python 用于自动化测试工具、数据解析脚本等辅助工具开发</li>
-<li><strong>熟悉 STM32、GD32</strong>：掌握 STM32 HAL&#x2F;LL 库架构与低功耗设计，熟悉 GD32 国产替代适配及寄存器级优化，具备 GPIO、TIM、ADC、DMA、USB 等外设驱动开发与硬件联调能力</li>
-<li><strong>熟悉 FreeRTOS&#x2F;uCOS</strong>：掌握任务调度、内存管理、中断优化等内核配置，能够保证多任务协同与实时性</li>
-</ul>
-<h2 id="工作经历"><a href="#工作经历" class="headerlink" title="工作经历"></a>工作经历</h2><p><strong>杭州海康威视数字技术有限公司</strong> | 嵌入式软件工程师（单片机）</p>
-<ul>
-<li>时间：2024.07 - 至今</li>
-</ul>
-<p><strong>工作内容：</strong></p>
-<ol>
-<li><strong>无线通信模组驱动开发</strong>：参与 NB-IoT、蓝牙 BLE、433M 等无线通信模组的驱动开发，通过串口&#x2F;SPI 与主控 SoC 交互。</li>
-<li><strong>高实时外设驱动开发</strong>：参与打印机芯、NFC 识别等高实时外设的驱动开发，通过串口&#x2F;SPI 与主控 SoC 交互。</li>
-<li><strong>功率电子控制</strong>：参与三合一补光灯与可控交直流电源板的软件开发。</li>
-</ol>
-<hr>
-<h2 id="项目经历"><a href="#项目经历" class="headerlink" title="项目经历"></a>项目经历</h2><h3 id="手持打印PDA（2025-03-至今）"><a href="#手持打印PDA（2025-03-至今）" class="headerlink" title="手持打印PDA（2025.03 - 至今）"></a>手持打印PDA（2025.03 - 至今）</h3><p><strong>工作内容：</strong> 负责打印机芯控制模块架构设计与实时性优化。</p>
-<p><strong>技术难点：</strong></p>
-<ul>
-<li>步进电机转速与热敏头加热时序需微秒级同步，否则会导致图像错位或加热不均</li>
-<li>SOC 串口持续高速推流，需保证接收零丢包同时不阻塞打印任务</li>
-</ul>
-<p><strong>解决方案：</strong></p>
-<ul>
-<li>基于 uCOS 创建”数据接收”与”打印控制”双任务架构，通过消息队列解耦</li>
-<li>设计 DMA + 乒乓双缓冲机制，双缓存区交替接收，实现数据”零拷贝”流转，提升串口带宽利用率</li>
-<li>将图像解析、电机步进、加热控制重构为三级流水线并行处理，降低单行打印耗时</li>
-<li>热敏头加热采用 TIM + PWM 微秒级脉宽调制，配合 ADC 实时温控动态调整占空比，防止过热烧头</li>
-</ul>
-<hr>
-<h3 id="井盖智能监测设备（2024-07-2024-12）"><a href="#井盖智能监测设备（2024-07-2024-12）" class="headerlink" title="井盖智能监测设备（2024.07 - 2024.12）"></a>井盖智能监测设备（2024.07 - 2024.12）</h3><p><strong>工作内容：</strong> 设计井盖状态（丢失&#x2F;破损&#x2F;移位&#x2F;浸水&#x2F;甲烷）多维度感知与 NB-IoT 远程上报方案，构建低功耗架构实现电池续航 ≥ 3 年。</p>
-<p><strong>技术难点：</strong></p>
-<ul>
-<li>井下 NB-IoT 信号衰减严重，数据包容易丢失</li>
-<li>3 年续航要求 μA 级平均电流，与告警实时响应需求冲突</li>
-</ul>
-<p><strong>解决方案：</strong></p>
-<ul>
-<li>设计间歇唤醒架构，RTC 定时 1 小时唤醒上报心跳数据，异常中断触发即时告警上报</li>
-<li>传感器分组供电，仅检测周期内上电</li>
-<li>NB-IoT 模组启用 PSM 深度休眠与 eDRX 扩展不连续接收，空闲时电流 &lt; 5μA</li>
-<li>数据包采用 CoAP 紧凑二进制编码，缩短发射时长</li>
-<li>建立三级缓存机制，网络异常时本地存储待恢复后补发，避免无效重传功耗</li>
-<li>整机平均电流控制在 25μA 以内，实现 3 年续航目标</li>
-</ul>
-<hr>
-<h3 id="1-38kW-电源控制系统（2025-04-2025-05）"><a href="#1-38kW-电源控制系统（2025-04-2025-05）" class="headerlink" title="1.38kW 电源控制系统（2025.04 - 2025.05）"></a>1.38kW 电源控制系统（2025.04 - 2025.05）</h3><p><strong>工作内容：</strong> 基于 GD32E11x 设计电源控制板，支持电压电流可调，具备上电时序管理及过温、短路、欠压保护。</p>
-<p><strong>技术难点：</strong></p>
-<ul>
-<li>交流输入为工频正弦信号，需实时计算真有效值作为上电时序与保护的判据，对计算精度和响应速度要求较高</li>
-<li>多级上电时序涉及继电器、PFC、DCDC 等多环节严格先后依赖，任一环节异常均可能导致硬件损坏</li>
-<li>短路保护需准确区分瞬态负载跳变与真实短路，避免误触发导致频繁停机，同时响应迟滞又可能损坏功率器件</li>
-</ul>
-<p><strong>解决方案：</strong></p>
-<ul>
-<li>交流有效值采用 DMA + ADC 连续采样，400ms 窗口内累加平方求和开根号计算 RMS，既适用于正弦波也适应畸变波形，确保计算精度</li>
-<li>上电时序采用有限状态机驱动（INIT → 输入检测 → PFC 启动 → DCDC 启动 → 运行 → 故障），每级设置超时计数器与条件回退，输入欠压时自动关断并支持条件恢复，确保时序严格可控</li>
-<li>短路保护采用 5 条件联合判断加连续 2 次确认防抖消除瞬态干扰，3 次短路锁定需掉电复位方可恢复防止反复短路损坏硬件，5 秒延时重试给予故障消除窗口实现安全恢复</li>
-</ul>
-<hr>
-<h3 id="多源补光灯（2025-08-2026-01）"><a href="#多源补光灯（2025-08-2026-01）" class="headerlink" title="多源补光灯（2025.08 - 2026.01）"></a>多源补光灯（2025.08 - 2026.01）</h3><p><strong>工作内容：</strong> 设计多源补光灯控制系统，实现气体&#x2F;LED 多光源协同控制、7 级亮度识别、多重安全保护。</p>
-<p><strong>技术难点：</strong></p>
-<ul>
-<li>多光源独立中断驱动存在输出冲突与互斥风险</li>
-<li>7 级亮度模式需微秒级周期识别与连续防抖</li>
-<li>裸机环境下多任务调度与多维度安全保护逻辑复杂</li>
-</ul>
-<p><strong>解决方案：</strong></p>
-<ul>
-<li>采用中断触发方式分别驱动三种光源，建立光源优先级仲裁机制，防止多灯同时输出造成冲突</li>
-<li>利用定时器精确测量输入控制信号的周期频率，依据不同频率自动匹配并切换对应的亮度工作模式，通过多次采样实现防抖，避免模式误判，自动交替高亮与低亮状态以增强补光对比度</li>
-<li>构建过流、过压、过温、频率异常及计数降功率等多重安全保护，防止设备过载损坏，并设置持续正常判定机制避免保护误退出</li>
-<li>通过 DAC 转换实现亮度精细调节</li>
-</ul>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2026/05/28/%E5%85%B3%E4%BA%8E%E6%88%91/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -451,9 +379,15 @@
         <i class="far fa-calendar"></i>
       </span>
       <span class="post-meta-item-text">发表于</span>
-      
 
-      <time title="创建时间：2026-05-28 00:00:00 / 修改时间：04:01:38" itemprop="dateCreated datePublished" datetime="2026-05-28T00:00:00+08:00">2026-05-28</time>
+      <time title="创建时间：2026-05-28 00:00:00" itemprop="dateCreated datePublished" datetime="2026-05-28T00:00:00+08:00">2026-05-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-05-29 00:04:59" itemprop="dateModified" datetime="2026-05-29T00:04:59+08:00">2026-05-29</time>
     </span>
 
   
@@ -467,64 +401,14 @@
     
     <div class="post-body" itemprop="articleBody">
           <h1 id="交流电压有效值计算技术解析"><a href="#交流电压有效值计算技术解析" class="headerlink" title="交流电压有效值计算技术解析"></a>交流电压有效值计算技术解析</h1><h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>近期在开发可调电源板，涉及交流电压的检测问题。核心点在于：如何通过单片机 ADC 采集的离散电压样本，准确还原交流信号的有效值（RMS）。本文对此进行系统梳理与总结。</p>
-<h2 id="一、硬件信号调理"><a href="#一、硬件信号调理" class="headerlink" title="一、硬件信号调理"></a>一、硬件信号调理</h2><p>交流输入电压经<strong>电阻分压衰减→直流偏置叠加→抗混叠滤波</strong>三级调理，将双极性高压交流信号变换为单极性低压信号供模数转换器采样。</p>
-<p>设实际交流电压瞬时值为 $v(t)$，调理后输入电压为：ruhe</p>
-<p>$$V_{in}(t) &#x3D; \frac{v(t)}{\alpha} + V_{bias}$$</p>
-<p>其中 $\alpha$ 为综合衰减系数（由分压电阻比与运放增益决定），$V_{bias}$ 为直流偏置电压，使双极性信号落入单极性量程 $[0, V_{ref}]$ 内。</p>
-<h2 id="二、RMS-数学推导"><a href="#二、RMS-数学推导" class="headerlink" title="二、RMS 数学推导"></a>二、RMS 数学推导</h2><h3 id="2-1-连续域定义"><a href="#2-1-连续域定义" class="headerlink" title="2.1 连续域定义"></a>2.1 连续域定义</h3><p>RMS（均方根）的物理本质是：对于一个随时间变化的信号 $v(t)$，其 RMS 值等价于一个<strong>恒定直流电压</strong>，该直流电压在相同电阻上产生的<strong>平均热功率</strong>与原始交流信号相同。基于此能量等效原理，连续时间域的 RMS 定义为：</p>
-<p>$$V_{rms} &#x3D; \sqrt{\frac{1}{T}\int_0^T v^2(t),dt}$$</p>
-<p>其中 $T$ 为信号周期（或观测时间窗口）。公式结构体现了”平方—平均—开根”三步运算，因此称为均方根。</p>
-<hr>
-<h3 id="2-2-从连续到离散：采样与近似"><a href="#2-2-从连续到离散：采样与近似" class="headerlink" title="2.2 从连续到离散：采样与近似"></a>2.2 从连续到离散：采样与近似</h3><p>实际嵌入式系统中，信号由 ADC 以采样率 $f_s$ 离散采集。设一个周期内采集 $N$ 个点，则积分运算退化为求和运算，连续定义自然过渡为离散形式：</p>
-<p>$$V_{rms} &#x3D; \sqrt{\frac{1}{N}\sum_{n&#x3D;0}^{N-1} v^2[n]}$$</p>
-<p>&gt; <strong>关键说明</strong>：此处的 $v[n]$ 仍为<strong>模拟电压值</strong>（单位：V），而非 ADC 输出的原始数字量。从下一节开始，我们将逐步建立从原始量化数据 $D[n]$ 到真实 RMS 电压的完整映射链。</p>
-<hr>
-<h3 id="2-3-从量化值到-RMS-的完整推导"><a href="#2-3-从量化值到-RMS-的完整推导" class="headerlink" title="2.3 从量化值到 RMS 的完整推导"></a>2.3 从量化值到 RMS 的完整推导</h3><p>嵌入式场景下，ADC 输出的是无符号整数 $D[n]$，必须经过量化还原、偏置消除、标定修正三步预处理，才能代入离散 RMS 公式计算。</p>
-<p><strong>Step 1 — 量化值转模拟电压</strong></p>
-<p>ADC 将输入电压线性量化为 $b$ 位无符号整数，满量程对应参考电压 $V_{ref}$。因此数字量 $D[n]$ 对应的采样电压为：</p>
-<p>$$V_{sample}[n] &#x3D; D[n] \cdot \frac{V_{ref}}{2^b}$$</p>
-<p><strong>Step 2 — 去偏置取绝对值</strong></p>
-<p>若信号经过偏置电路抬升（如交流信号叠加直流偏置 $V_{bias}$），需先消除偏置并取绝对值以恢复信号的对称性：</p>
-<p>$$V_{abs}[n] &#x3D; |V_{sample}[n] - V_{bias}|$$</p>
-<p>&gt; 去偏置的本质是将信号零点还原至坐标原点，确保后续平方运算不引入直流分量的能量贡献。</p>
-<p><strong>Step 3 — 乘标定系数还原实际电压</strong></p>
-<p>由于前端调理电路（分压、放大、互感器等）的存在，$V_{abs}[n]$ 并非真实被测电压。引入标定系数 $\alpha$（由硬件增益和传感器变比决定）进行还原：</p>
-<p>$$V_{actual}[n] &#x3D; \alpha \cdot V_{abs}[n]$$</p>
-<p><strong>Step 4 — 平方累加（需双倍字长防溢出）</strong></p>
-<p>将还原后的实际电压代入 RMS 的离散核，先平方再累加。考虑到 $V_{actual}^2[n]$ 可能超出单精度范围，累加器 $S$ 应采用双倍字长（如 32 位系统使用 64 位累加）：</p>
-<p>$$S &#x3D; \sum_{n&#x3D;0}^{N-1} V_{actual}^2[n]$$</p>
-<p><strong>Step 5 — 开根号求 RMS</strong></p>
-<p>最后对累加结果取平均并开平方，得到真实电压的 RMS 值：</p>
-<p>$$V_{rms} &#x3D; \sqrt{\frac{S}{N}}$$</p>
-<hr>
-<h3 id="2-4-完整公式汇总"><a href="#2-4-完整公式汇总" class="headerlink" title="2.4 完整公式汇总"></a>2.4 完整公式汇总</h3><p>将上述五步合并，得到从原始 ADC 量化值 $D[n]$ 到最终 RMS 电压的完整表达式：</p>
-<p>$$V_{rms} &#x3D; \sqrt{\frac{1}{N}\sum_{n&#x3D;0}^{N-1}\left(\alpha \cdot \left|D[n] \cdot \frac{V_{ref}}{2^b} - V_{bias}\right|\right)^2}$$</p>
-<p>该公式完整刻画了<strong>量化还原 → 偏置消除 → 标定修正 → 均方根运算</strong>的全链路数学模型，是嵌入式 RMS 测量的理论基石。</p>
-<h2 id="三、软件架构"><a href="#三、软件架构" class="headerlink" title="三、软件架构"></a>三、软件架构</h2><blockquote>
-<p>基于第 2.4 节推导的完整 RMS 计算公式，本节设计一套与之匹配的嵌入式软件架构。核心挑战在于：公式涉及逐点平方累加和浮点开根号等重度运算，若在中断中直接执行将阻塞高优先级任务；同时 ADC 高速采样与 RMS 低速计算之间存在数量级的速率差异。为此，采用<strong>三级流水线 + 双缓冲隔离 + 中断-任务分离</strong>的三层设计策略，实现采集与计算的解耦</p>
-</blockquote>
-<h3 id="3-1-三级流水线"><a href="#3-1-三级流水线" class="headerlink" title="3.1 三级流水线"></a>3.1 三级流水线</h3><p>采用<strong>硬件自动采样 → 周期中断搬运 → 非实时任务计算</strong>三级流水线，将高速采集、中速聚合与低速计算解耦。各级速率逐级递减，形成天然的数据漏斗：</p>
-<pre class="mermaid">graph TB
-    subgraph "第一级：硬件自动采样"
-        A["多通道ADC<br/>连续转换+扫描模式"] --> B["DMA循环搬运<br/>外设→内存自动传输"]
-    end
-    
-    subgraph "第二级：周期中断搬运"
-        C["周期定时中断"] --> E["交流通道：逐点存储"]
-    end
-    
-    subgraph "第三级：非实时任务计算"
-        G["交流任务：RMS计算"] --> H["输出结构体"]
-    end
-    
-    B -->|"共享采样数组"| C
-    E -->|"逐点存储缓冲区"| G</pre>
-
-<h3 id="3-2-双缓冲隔离与中断-任务分离原则"><a href="#3-2-双缓冲隔离与中断-任务分离原则" class="headerlink" title="3.2 双缓冲隔离与中断-任务分离原则"></a>3.2 双缓冲隔离与中断-任务分离原则</h3><ul>
-<li>主累加缓冲区（中断写入）与计算缓冲区（任务读取）物理分离，周期到期时批量复制，避免中断与任务并发访问导致数据撕裂.</li>
-<li>核心思想：中断仅执行轻量聚合，将RMS的浮点平方与开根号等重度运算推迟到非实时任务中，确保中断响应时间的确定性。</li>
-</ul>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2026/05/28/%E4%BA%A4%E6%B5%81%E7%94%B5%E5%8E%8B%E6%B5%8B%E9%87%8F/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
@@ -581,6 +465,13 @@
 
       <time title="创建时间：2026-05-24 22:43:16" itemprop="dateCreated datePublished" datetime="2026-05-24T22:43:16+08:00">2026-05-24</time>
     </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-05-28 23:58:28" itemprop="dateModified" datetime="2026-05-28T23:58:28+08:00">2026-05-28</time>
+    </span>
 
   
 </div>
@@ -593,19 +484,14 @@
     
     <div class="post-body" itemprop="articleBody">
           <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2026/05/24/hello-world/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
