@@ -151,7 +151,7 @@
     </div>
   </div>
 
-  <div class="site-meta">
+  <div class="site-meta header-site-meta">
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
@@ -199,21 +199,75 @@
         <!--/noindex-->
 
         <div class="site-overview-wrap sidebar-panel">
-          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">约瑟文</p>
-  <div class="site-description" itemprop="description"></div>
+          
+
+<!-- 上部：博客信息 + 导航菜单 -->
+<div class="site-brand">
+  <div class="site-meta">
+    <a class="site-title-link" href="/">
+      <h1 class="site-title">约瑟文的技术博客</h1>
+    </a>
+    <p class="site-subtitle">嵌入式开发与物联网笔记</p>
+  </div>
 </div>
-<div class="site-state-wrap animated">
+<nav class="site-nav sidebar-menu">
+  <ul class="menu">
+      <li class="menu-item menu-item-home">
+        <a href="/">
+          <i class="fa fa-home fa-fw"></i>
+          <span>首页</span>
+        </a>
+      </li>
+      <li class="menu-item menu-item-tags">
+        <a href="/tags/">
+          <i class="fa fa-tags fa-fw"></i>
+          <span>标签</span>
+        </a>
+      </li>
+      <li class="menu-item menu-item-categories">
+        <a href="/categories/">
+          <i class="fa fa-th fa-fw"></i>
+          <span>分类</span>
+        </a>
+      </li>
+      <li class="menu-item menu-item-archives">
+        <a href="/archives/">
+          <i class="fa fa-archive fa-fw"></i>
+          <span>归档</span>
+        </a>
+      </li>
+  </ul>
+</nav>
+
+<!-- 分隔线 -->
+<div class="sidebar-divider"></div>
+
+<!-- 下部：作者信息 + 统计 -->
+<div class="site-author">
+  <p class="site-author-name">约瑟文</p>
+</div>
+<div class="site-state-wrap">
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
           <span class="site-state-item-count">3</span>
-          <span class="site-state-item-name">日志</span>
+          <span class="site-state-item-name">文章</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <a href="/categories/">
+          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <a href="/tags/">
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">标签</span>
         </a>
       </div>
   </nav>
 </div>
-
         </div>
       </div>
     </div>
@@ -285,7 +339,7 @@
     <header class="post-header">
       <div class="post-meta-container">
         <time itemprop="dateCreated"
-              datetime="2026-05-24T22:43:16+08:00"
+              datetime="2026-05-24T00:00:00+08:00"
               content="2026-05-24">
           05-24
         </time>
