@@ -288,98 +288,6 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="约瑟文">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="约瑟文的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 约瑟文的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/" class="post-title-link" itemprop="url">【技术排障】SysTick 中断过早触发导致 μC/OS-III 起始任务创建失败的分析与解决</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2026-05-28 12:00:00" itemprop="dateCreated datePublished" datetime="2026-05-28T12:00:00+08:00">2026-05-28</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-05-30 00:33:07" itemprop="dateModified" datetime="2026-05-30T00:33:07+08:00">2026-05-30</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">嵌入式开发</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>在手持打印机项目调试过程中，发现部分设备无法正常运行。经排查，问题源于起始任务创建失败。分析表明，在 μC&#x2F;OS-III 系统初始化阶段，由于 SysTick 定时器过早启动，导致中断嵌套计数器 OSIntNestingCtr 的值不为零，从而影响了起始任务的正常创建。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/05/28/%E5%85%B3%E4%BA%8E%E6%88%91/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -442,6 +350,98 @@
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2026/05/28/%E5%85%B3%E4%BA%8E%E6%88%91/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="约瑟文">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="约瑟文的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | 约瑟文的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/" class="post-title-link" itemprop="url">【技术排障】SysTick 中断过早触发导致 μC/OS-III 起始任务创建失败的分析与解决</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2026-05-28 12:00:00" itemprop="dateCreated datePublished" datetime="2026-05-28T12:00:00+08:00">2026-05-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2026-05-30 00:33:07" itemprop="dateModified" datetime="2026-05-30T00:33:07+08:00">2026-05-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">嵌入式开发</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>在手持打印机项目调试过程中，发现部分设备无法正常运行。经排查，问题源于起始任务创建失败。分析表明，在 μC&#x2F;OS-III 系统初始化阶段，由于 SysTick 定时器过早启动，导致中断嵌套计数器 OSIntNestingCtr 的值不为零，从而影响了起始任务的正常创建。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
