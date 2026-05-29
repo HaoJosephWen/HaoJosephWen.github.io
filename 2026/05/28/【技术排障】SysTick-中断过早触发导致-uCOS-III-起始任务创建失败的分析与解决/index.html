@@ -20,22 +20,31 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"haojosephwen.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
 
-    <meta property="og:type" content="website">
-<meta property="og:title" content="约瑟文的技术博客">
-<meta property="og:url" content="https://haojosephwen.github.io/index.html">
+    <meta name="description" content="在手持打印机项目调试过程中，发现部分设备无法正常运行。经排查，问题源于起始任务创建失败。分析表明，在 μC&#x2F;OS-III 系统初始化阶段，由于 SysTick 定时器过早启动，导致中断嵌套计数器 OSIntNestingCtr 的值不为零，从而影响了起始任务的正常创建。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【技术排障】SysTick 中断过早触发导致 μC&#x2F;OS-III 起始任务创建失败的分析与解决">
+<meta property="og:url" content="https://haojosephwen.github.io/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/index.html">
 <meta property="og:site_name" content="约瑟文的技术博客">
+<meta property="og:description" content="在手持打印机项目调试过程中，发现部分设备无法正常运行。经排查，问题源于起始任务创建失败。分析表明，在 μC&#x2F;OS-III 系统初始化阶段，由于 SysTick 定时器过早启动，导致中断嵌套计数器 OSIntNestingCtr 的值不为零，从而影响了起始任务的正常创建。">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-05-28T04:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-29T16:33:07.679Z">
 <meta property="article:author" content="约瑟文">
+<meta property="article:tag" content="uC&#x2F;OS-III">
+<meta property="article:tag" content="SysTick">
+<meta property="article:tag" content="中断">
+<meta property="article:tag" content="RTOS">
+<meta property="article:tag" content="调试">
 <meta name="twitter:card" content="summary">
 
 
-<link rel="canonical" href="https://haojosephwen.github.io/">
+<link rel="canonical" href="https://haojosephwen.github.io/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":true,"isPost":false,"lang":"zh-CN","comments":"","permalink":"","path":"index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://haojosephwen.github.io/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/","path":"2026/05/28/【技术排障】SysTick-中断过早触发导致-uCOS-III-起始任务创建失败的分析与解决/","title":"【技术排障】SysTick 中断过早触发导致 μC/OS-III 起始任务创建失败的分析与解决"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>约瑟文的技术博客</title>
+<title>【技术排障】SysTick 中断过早触发导致 μC/OS-III 起始任务创建失败的分析与解决 | 约瑟文的技术博客</title>
   
 
 
@@ -155,7 +164,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">约瑟文的技术博客</h1>
+      <p class="site-title">约瑟文的技术博客</p>
       <i class="logo-line"></i>
     </a>
       <p class="site-subtitle" itemprop="description">嵌入式开发与物联网笔记</p>
@@ -182,7 +191,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
@@ -195,6 +204,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80-%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">一 问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C-%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">二 问题分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-OSIntNestingCtr-%E7%9A%84%E4%BD%9C%E7%94%A8%E6%9C%BA%E5%88%B6"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 OSIntNestingCtr 的作用机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E9%97%AE%E9%A2%98%E6%97%B6%E5%BA%8F%E5%88%86%E6%9E%90"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 问题时序分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">三 解决方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B-%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">四 总结</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -278,108 +288,17 @@
 
     </div>
 
-    <div class="main-inner index posts-expand">
+    <div class="main-inner post posts-expand">
 
-    
+
+  
 
 
 <div class="post-block">
   
   
 
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/05/28/%E5%85%B3%E4%BA%8E%E6%88%91/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="约瑟文">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="约瑟文的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 约瑟文的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2026/05/28/%E5%85%B3%E4%BA%8E%E6%88%91/" class="post-title-link" itemprop="url">关于我</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2026-05-28 03:52:22" itemprop="dateCreated datePublished" datetime="2026-05-28T03:52:22+08:00">2026-05-28</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-05-29 01:48:11" itemprop="dateModified" datetime="2026-05-29T01:48:11+08:00">2026-05-29</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E4%B8%AA%E4%BA%BA%E7%AE%80%E4%BB%8B/" itemprop="url" rel="index"><span itemprop="name">个人简介</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>关于我页面，用于展示个人信息、教育背景、主要技能和工作经历。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2026/05/28/%E5%85%B3%E4%BA%8E%E6%88%91/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -393,13 +312,13 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 约瑟文的技术博客">
+      <meta itemprop="name" content="【技术排障】SysTick 中断过早触发导致 μC&#x2F;OS-III 起始任务创建失败的分析与解决 | 约瑟文的技术博客">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/" class="post-title-link" itemprop="url">【技术排障】SysTick 中断过早触发导致 μC/OS-III 起始任务创建失败的分析与解决</a>
-        </h2>
+        <h1 class="post-title" itemprop="name headline">
+          【技术排障】SysTick 中断过早触发导致 μC/OS-III 起始任务创建失败的分析与解决
+        </h1>
 
         <div class="post-meta-container">
           <div class="post-meta">
@@ -437,17 +356,40 @@
     
     
     
-    <div class="post-body" itemprop="articleBody">
-          <p>在手持打印机项目调试过程中，发现部分设备无法正常运行。经排查，问题源于起始任务创建失败。分析表明，在 μC&#x2F;OS-III 系统初始化阶段，由于 SysTick 定时器过早启动，导致中断嵌套计数器 OSIntNestingCtr 的值不为零，从而影响了起始任务的正常创建。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2026/05/28/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91SysTick-%E4%B8%AD%E6%96%AD%E8%BF%87%E6%97%A9%E8%A7%A6%E5%8F%91%E5%AF%BC%E8%87%B4-uCOS-III-%E8%B5%B7%E5%A7%8B%E4%BB%BB%E5%8A%A1%E5%88%9B%E5%BB%BA%E5%A4%B1%E8%B4%A5%E7%9A%84%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
+    <div class="post-body" itemprop="articleBody"><p>在手持打印机项目调试过程中，发现部分设备无法正常运行。经排查，问题源于起始任务创建失败。分析表明，在 μC&#x2F;OS-III 系统初始化阶段，由于 SysTick 定时器过早启动，导致中断嵌套计数器 OSIntNestingCtr 的值不为零，从而影响了起始任务的正常创建。</p>
+<span id="more"></span>
+
+<h2 id="一-问题描述"><a href="#一-问题描述" class="headerlink" title="一 问题描述"></a>一 问题描述</h2><p>系统初始化流程如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">main_init</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line">    cpu_init();     <span class="comment">// CPU初始化（包含 enable_global_irq()）</span></span><br><span class="line">    bsp_init();     <span class="comment">// 外设初始化</span></span><br><span class="line">    app_init();     <span class="comment">// 应用初始化（包含uC/OS-III初始化和任务创建）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>app_init()</code> → <code>main_task_create()</code> 中创建起始任务时，<code>OSTaskCreate()</code> 返回错误码 <code>OS_ERR_TASK_CREATE_ISR</code>，表明系统检测到当前处于中断上下文，起始任务无法创建，导致系统无法启动。</p>
+<p><strong>关键现象</strong>：当屏蔽 <code>cpu_init()</code> 中的 <code>enable_global_irq()</code> 函数后，程序能够正常运行。</p>
+<h2 id="二-问题分析"><a href="#二-问题分析" class="headerlink" title="二 问题分析"></a>二 问题分析</h2><p>当系统变量 <code>OSIntNestingCtr</code>（中断嵌套计数器）的值不为0时，<code>OSTaskCreate()</code> 函数会拒绝创建任务，并返回 <code>OS_ERR_TASK_CREATE_ISR</code>。</p>
+<h3 id="2-1-OSIntNestingCtr-的作用机制"><a href="#2-1-OSIntNestingCtr-的作用机制" class="headerlink" title="2.1 OSIntNestingCtr 的作用机制"></a>2.1 OSIntNestingCtr 的作用机制</h3><ul>
+<li><strong>递增操作</strong>：在 SysTickTimer 的中断服务函数 <code>OS_CPU_SysTickHandler</code> 中，会执行 <code>OSIntNestingCtr++</code></li>
+<li><strong>递减操作</strong>：仅当操作系统处于运行状态（<code>OSRunning == OS_STATE_OS_RUNNING</code>）时，在 SysTickTimer 的中断退出处理中才会执行 <code>OSIntNestingCtr--</code></li>
+<li><strong>初始化</strong>：在 <code>OSInit()</code> 函数中会将 <code>OSIntNestingCtr</code> 初始化为0</li>
+</ul>
+<h3 id="2-2-问题时序分析"><a href="#2-2-问题时序分析" class="headerlink" title="2.2 问题时序分析"></a>2.2 问题时序分析</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">OS_ERR err = OS_ERR_NONE;</span><br><span class="line">UCOSIII_BSP_Init();     <span class="comment">// 开启SysTickTimer</span></span><br><span class="line">CPU_Init();             <span class="comment">// CPU初始化</span></span><br><span class="line">OSInit(&amp;err);           <span class="comment">// 初始化uC/OS-III（将OSIntNestingCtr置为0）</span></span><br><span class="line">main_task_create();     <span class="comment">// 创建起始任务</span></span><br><span class="line">OSStart(&amp;err);          <span class="comment">// 启动多任务系统</span></span><br></pre></td></tr></table></figure>
+
+<ol>
+<li><strong>过早开启定时器</strong>：在 <code>UCOSIII_BSP_Init()</code> 中过早开启了 SysTickTimer</li>
+<li><strong>中断触发风险</strong>：从 <code>UCOSIII_BSP_Init()</code> 执行完毕到 <code>OSStart()</code> 执行之前的时间窗口内：<ul>
+<li>SysTick 中断可能被触发</li>
+<li>进入 <code>OS_CPU_SysTickHandler</code> 执行 <code>OSIntNestingCtr++</code></li>
+<li>由于此时 <code>OSRunning != OS_STATE_OS_RUNNING</code>，不会执行 <code>OSIntNestingCtr--</code></li>
+</ul>
+</li>
+<li><strong>计数器累积</strong>：即使 <code>OSInit()</code> 已将 <code>OSIntNestingCtr</code> 重置为0，但在 <code>main_task_create()</code> 执行期间，SysTick 中断仍可能被触发，导致 <code>OSIntNestingCtr</code> 值增加且无法减少</li>
+<li><strong>任务创建失败</strong>：当 <code>OSTaskCreate()</code> 检测到 <code>OSIntNestingCtr ≠ 0</code> 时，判定为在ISR上下文中创建任务，因此返回错误</li>
+</ol>
+<h2 id="三-解决方法"><a href="#三-解决方法" class="headerlink" title="三 解决方法"></a>三 解决方法</h2><p><strong>确保操作系统起来之前，滴答定时器是关闭的</strong></p>
+<p>调整初始化顺序，将 SysTick 定时器的启动时机推迟到操作系统启动之后：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">OS_ERR err = OS_ERR_NONE;</span><br><span class="line">CPU_Init();             <span class="comment">// CPU初始化</span></span><br><span class="line">OSInit(&amp;err);           <span class="comment">// 初始化uC/OS-III</span></span><br><span class="line">main_task_create();     <span class="comment">// 创建起始任务</span></span><br><span class="line">OSStart(&amp;err);          <span class="comment">// 启动多任务系统（在此之后启动SysTick）</span></span><br></pre></td></tr></table></figure>
+
+<p>或者在 <code>UCOSIII_BSP_Init()</code> 中不要立即启动 SysTick，而是在第一个任务中调用 <code>OS_CPU_SysTickInit()</code> 来启动滴答定时器。</p>
+<h2 id="四-总结"><a href="#四-总结" class="headerlink" title="四 总结"></a>四 总结</h2><p>这个问题的核心在于<strong>中断与操作系统状态的时序配合</strong>。在 μC&#x2F;OS-III 中，<code>OSIntNestingCtr</code> 是判断当前是否处于中断上下文的关键标志，而 SysTick 中断的处理逻辑与操作系统运行状态紧密耦合。因此，在系统完全初始化并启动之前，必须确保 SysTick 定时器处于关闭状态，避免中断嵌套计数器异常累积导致任务创建失败。</p>
+
     </div>
 
     
@@ -455,195 +397,29 @@
     
 
     <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
+          <div class="post-tags">
+              <a href="/tags/uC-OS-III/" rel="tag"># uC/OS-III</a>
+              <a href="/tags/SysTick/" rel="tag"># SysTick</a>
+              <a href="/tags/%E4%B8%AD%E6%96%AD/" rel="tag"># 中断</a>
+              <a href="/tags/RTOS/" rel="tag"># RTOS</a>
+              <a href="/tags/%E8%B0%83%E8%AF%95/" rel="tag"># 调试</a>
+          </div>
 
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/%E4%BA%A4%E6%B5%81%E7%94%B5%E5%8E%8B%E6%B5%8B%E9%87%8F/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="约瑟文">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="约瑟文的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 约瑟文的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/%E4%BA%A4%E6%B5%81%E7%94%B5%E5%8E%8B%E6%B5%8B%E9%87%8F/" class="post-title-link" itemprop="url">【技术总结】交流电压有效值计算技术解析</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2026-05-28 00:00:00" itemprop="dateCreated datePublished" datetime="2026-05-28T00:00:00+08:00">2026-05-28</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-05-29 01:48:17" itemprop="dateModified" datetime="2026-05-29T01:48:17+08:00">2026-05-29</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">嵌入式开发</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>近期在开发可调电源板，涉及交流电压的检测问题。核心点在于：如何通过单片机 ADC 采集的离散电压样本，准确还原交流信号的有效值（RMS）。本文对此进行系统梳理与总结。</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/%E4%BA%A4%E6%B5%81%E7%94%B5%E5%8E%8B%E6%B5%8B%E9%87%8F/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
         
-      
-    </div>
 
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/05/24/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="约瑟文">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="约瑟文的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content=" | 约瑟文的技术博客">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2026/05/24/hello-world/" class="post-title-link" itemprop="url">Hello World</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">发表于</span>
-
-      <time title="创建时间：2026-05-24 00:00:00" itemprop="dateCreated datePublished" datetime="2026-05-24T00:00:00+08:00">2026-05-24</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">更新于</span>
-      <time title="修改时间：2026-05-29 01:48:25" itemprop="dateModified" datetime="2026-05-29T01:48:25+08:00">2026-05-29</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">分类于</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/Hexo/" itemprop="url" rel="index"><span itemprop="name">Hexo</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2026/05/24/hello-world/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/05/28/%E5%85%B3%E4%BA%8E%E6%88%91/" rel="prev" title="关于我">
+                  <i class="fa fa-angle-left"></i> 关于我
+                </a>
             </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
+            <div class="post-nav-item">
+            </div>
+          </div>
     </footer>
   </article>
 </div>
+
 
 
 
