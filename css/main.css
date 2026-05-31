@@ -1388,7 +1388,7 @@ pre code {
   vertical-align: middle;
 }
 .links-of-author a::before {
-  background: #cdff14;
+  background: #e93e41;
   display: inline-block;
   margin-right: 3px;
   transform: translateY(-2px);
@@ -2734,4 +2734,44 @@ header.header {
 }
 .header .site-nav {
   display: none !important;
+}
+.sidebar-inner .sidebar-top-section {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px;
+}
+.sidebar-inner .sidebar-top-section .site-brand {
+  margin-bottom: 10px;
+}
+.sidebar-inner .sidebar-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  margin: 15px 20px;
+}
+.sidebar-inner .sidebar-bottom-section {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 10px;
+}
+.sidebar-inner .sidebar-bottom-section .site-author {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.sidebar-inner .sidebar-bottom-section .site-author .site-author-image {
+  margin-bottom: 10px;
+}
+.sidebar-inner .sidebar-bottom-section .site-state-wrap .site-state {
+  display: flex;
+  justify-content: space-around;
+}
+.sidebar-inner .sidebar-bottom-section .site-state-wrap .site-state .site-state-item {
+  text-align: center;
+}
+.sidebar-inner .sidebar-bottom-section .site-state-wrap .site-state .site-state-item a {
+  display: block;
+  padding: 5px;
 }
