@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"haojosephwen.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="本文结合书籍《ARM Cortex-M3&#x2F;M4 权威指南》和GD32与STM32的用户手册，对NVIC中断优先级配置进行详细讲解。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【知识总结】STM32与GD32 NVIC 中断优先级配置详解">
+<meta property="og:url" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="约瑟文的技术博客">
+<meta property="og:description" content="本文结合书籍《ARM Cortex-M3&#x2F;M4 权威指南》和GD32与STM32的用户手册，对NVIC中断优先级配置进行详细讲解。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/1.png">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/2.png">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/3.png">
+<meta property="article:published_time" content="2026-06-27T14:38:19.000Z">
+<meta property="article:modified_time" content="2026-06-27T14:44:24.539Z">
+<meta property="article:author" content="约瑟文">
+<meta property="article:tag" content="STM32">
+<meta property="article:tag" content="Cortex-M">
+<meta property="article:tag" content="NVIC">
+<meta property="article:tag" content="中断优先级">
+<meta property="article:tag" content="GD32">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/1.png">
+
+
+<link rel="canonical" href="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://haojosephwen.github.io/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/","path":"2026/06/27/【知识总结】STM32与GD32-NVIC-中断优先级配置详解/","title":"【知识总结】STM32与GD32 NVIC 中断优先级配置详解"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【知识总结】STM32与GD32 NVIC 中断优先级配置详解 | 约瑟文的技术博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 等待 mermaid 加载完成
+      function waitForMermaid(callback) {
+        if (typeof mermaid !== 'undefined') {
+          callback();
+        } else {
+          setTimeout(function() { waitForMermaid(callback); }, 100);
+        }
+      }
+      
+      waitForMermaid(function() {
+        // 查找所有 Mermaid 代码块（多种可能的选择器）
+        var selectors = [
+          'pre code.language-mermaid',
+          'pre .mermaid',
+          '.highlight .mermaid',
+          'pre[data-lang="mermaid"] code'
+        ];
+        
+        var elements = [];
+        selectors.forEach(function(sel) {
+          var found = document.querySelectorAll(sel);
+          found.forEach(function(el) {
+            elements.push(el);
+          });
+        });
+        
+        // 去重
+        var uniqueElements = [];
+        elements.forEach(function(el) {
+          if (uniqueElements.indexOf(el) === -1) {
+            uniqueElements.push(el);
+          }
+        });
+        
+        if (uniqueElements.length === 0) return;
+        
+        // 替换代码块为 mermaid 容器
+        uniqueElements.forEach(function(element) {
+          var pre = element.closest('pre');
+          if (!pre) return;
+          
+          var code = element.textContent || element.innerText;
+          
+          var container = document.createElement('div');
+          container.className = 'mermaid';
+          container.textContent = code;
+          
+          pre.parentNode.replaceChild(container, pre);
+        });
+        
+        // 初始化并渲染
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'default'
+        });
+        
+        mermaid.run();
+      });
+    });
+  </script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+<!-- hexo injector head_end end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta header-site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">约瑟文的技术博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">嵌入式开发与物联网笔记</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E4%BC%98%E5%85%88%E7%BA%A7%E5%88%86%E7%BB%84%E4%B8%8E%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">1.</span> <span class="nav-text">1. 优先级分组与优先级</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E8%AE%BE%E7%BD%AE%E4%BC%98%E5%85%88%E7%BA%A7%E5%88%86%E7%BB%84"><span class="nav-number">2.</span> <span class="nav-text">2. 设置优先级分组</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E8%AE%BE%E7%BD%AE%E5%85%B7%E4%BD%93%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">3.</span> <span class="nav-text">3. 设置具体优先级</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%83%85%E5%86%B5-A%EF%BC%9A%E5%86%85%E6%A0%B8%E5%BC%82%E5%B8%B8%EF%BC%88IRQn-0%EF%BC%89"><span class="nav-number">3.1.</span> <span class="nav-text">情况 A：内核异常（IRQn &lt; 0）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%83%85%E5%86%B5-B%EF%BC%9A%E5%A4%96%E9%83%A8%E4%B8%AD%E6%96%AD%EF%BC%88IRQn-0%EF%BC%89"><span class="nav-number">3.2.</span> <span class="nav-text">情况 B：外部中断（IRQn &gt;&#x3D; 0）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E7%A4%BA%E4%BE%8B%EF%BC%9ASTM32L431-%E4%BC%98%E5%85%88%E7%BA%A7%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">4. 示例：STM32L431 优先级设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%8E%82%E5%95%86%E5%87%BD%E6%95%B0%E5%B7%AE%E5%BC%82"><span class="nav-number">5.</span> <span class="nav-text">5. 厂商函数差异</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GD-%E7%B3%BB%E5%88%97"><span class="nav-number">5.1.</span> <span class="nav-text">GD 系列</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ST-%E7%B3%BB%E5%88%97"><span class="nav-number">5.2.</span> <span class="nav-text">ST 系列</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-Keil-%E8%B0%83%E8%AF%95%E4%B8%AD-Priority-%E5%88%97%E5%90%AB%E4%B9%89"><span class="nav-number">6.</span> <span class="nav-text">6. Keil 调试中 Priority 列含义</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          
+
+<!-- 上部：博客信息 + 导航菜单 -->
+<div class="sidebar-top-section">
+  <div class="site-brand">
+    <div class="site-meta">
+      <a class="site-title-link" href="/">
+        <h1 class="site-title">约瑟文的技术博客</h1>
+      </a>
+      <p class="site-subtitle">嵌入式开发与物联网笔记</p>
+    </div>
+  </div>
+  <nav class="site-nav sidebar-menu">
+    <ul class="menu">
+        <li class="menu-item menu-item-home">
+          <a href="/">
+            <i class="fa fa-home fa-fw"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/">
+            <i class="fa fa-tags fa-fw"></i>
+            <span>标签</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/">
+            <i class="fa fa-th fa-fw"></i>
+            <span>分类</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/">
+            <i class="fa fa-archive fa-fw"></i>
+            <span>归档</span>
+          </a>
+        </li>
+    </ul>
+  </nav>
+</div>
+
+<!-- 分隔线 -->
+<div class="sidebar-divider"></div>
+
+<!-- 下部：作者信息 + 统计 + 社交链接 -->
+<div class="sidebar-bottom-section">
+  <div class="site-author">
+      <img class="site-author-image" src="/images/avatar.jpg">
+    <p class="site-author-name">约瑟文</p>
+  </div>
+  <div class="links-of-author sidebar-social">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HaoJosephWen" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HaoJosephWen" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2735645434@qq.com" title="E-Mail → mailto:2735645434@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+  </div>
+  <div class="site-state-wrap">
+    <nav class="site-state">
+        <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+            <span class="site-state-item-count">11</span>
+            <span class="site-state-item-name">文章</span>
+          </a>
+        </div>
+        <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+            <span class="site-state-item-count">3</span>
+            <span class="site-state-item-name">分类</span>
+          </a>
+        </div>
+        <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+            <span class="site-state-item-count">30</span>
+            <span class="site-state-item-name">标签</span>
+          </a>
+        </div>
+    </nav>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="约瑟文">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="约瑟文的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【知识总结】STM32与GD32 NVIC 中断优先级配置详解 | 约瑟文的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【知识总结】STM32与GD32 NVIC 中断优先级配置详解
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-06-27 22:38:19 / 修改时间：22:44:24" itemprop="dateCreated datePublished" datetime="2026-06-27T22:38:19+08:00">2026-06-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">嵌入式开发</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>本文结合书籍《ARM Cortex-M3&#x2F;M4 权威指南》和GD32与STM32的用户手册，对NVIC中断优先级配置进行详细讲解。</p>
+<span id="more"></span>
+
+<h2 id="1-优先级分组与优先级"><a href="#1-优先级分组与优先级" class="headerlink" title="1. 优先级分组与优先级"></a>1. 优先级分组与优先级</h2><p>优先级分组将中断优先级分为<strong>抢占优先级</strong>和<strong>响应优先级</strong>：</p>
+<ul>
+<li><strong>抢占优先级</strong>：决定了中断是否能打断正在执行的较低优先级中断或任务。具有更高抢占优先级的中断可以中断当前正在执行的较低优先级中断或任务。</li>
+<li><strong>响应优先级</strong>：在相同抢占优先级的中断或任务之间，响应优先级决定了中断或任务的执行顺序，确保了任务调度的公平性和确定性。</li>
+</ul>
+<h2 id="2-设置优先级分组"><a href="#2-设置优先级分组" class="headerlink" title="2. 设置优先级分组"></a>2. 设置优先级分组</h2><table>
+<thead>
+<tr>
+<th>操作方式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CMSIS 函数</td>
+<td><code>NVIC_SetPriorityGrouping()</code></td>
+</tr>
+<tr>
+<td>操作寄存器</td>
+<td><code>SCB-&gt;AIRCR</code>（Application Interrupt and Reset Control Register）</td>
+</tr>
+<tr>
+<td>操作位段</td>
+<td><code>PRIGROUP</code>（位 [10:8]）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>注意</strong>：写入此寄存器需要特殊流程（必须先写入 <code>0x5FA</code> 到 <code>VECTKEY</code> 位段），否则写入无效。CMSIS 函数内部自动处理了这个”钥匙”操作。</p>
+</blockquote>
+<img src="/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/1.png" class="" title="图1">
+
+<h2 id="3-设置具体优先级"><a href="#3-设置具体优先级" class="headerlink" title="3. 设置具体优先级"></a>3. 设置具体优先级</h2><table>
+<thead>
+<tr>
+<th>操作方式</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CMSIS 函数</td>
+<td><code>NVIC_SetPriority(IRQn, priority)</code></td>
+</tr>
+<tr>
+<td>操作寄存器</td>
+<td>动态决定，取决于中断号（<code>IRQn</code>）是正数还是负数</td>
+</tr>
+</tbody></table>
+<h3 id="情况-A：内核异常（IRQn-0）"><a href="#情况-A：内核异常（IRQn-0）" class="headerlink" title="情况 A：内核异常（IRQn &lt; 0）"></a>情况 A：内核异常（IRQn &lt; 0）</h3><p>例如：<code>SysTick_IRQn (-1)</code>、<code>PendSV_IRQn (-2)</code>、<code>SVCall_IRQn (-5)</code></p>
+<ul>
+<li><strong>操作寄存器</strong>：<code>SCB-&gt;SHP[]</code>（System Handler Priority Registers）</li>
+</ul>
+<h3 id="情况-B：外部中断（IRQn-0）"><a href="#情况-B：外部中断（IRQn-0）" class="headerlink" title="情况 B：外部中断（IRQn &gt;&#x3D; 0）"></a>情况 B：外部中断（IRQn &gt;&#x3D; 0）</h3><p>例如：<code>USART0_IRQn</code>、<code>EXTI0_IRQn</code></p>
+<ul>
+<li><strong>操作寄存器</strong>：<code>NVIC-&gt;IP[]</code>（Interrupt Priority Registers）</li>
+</ul>
+<h2 id="4-示例：STM32L431-优先级设置"><a href="#4-示例：STM32L431-优先级设置" class="headerlink" title="4. 示例：STM32L431 优先级设置"></a>4. 示例：STM32L431 优先级设置</h2><p>以 STM32L431 为例，优先级寄存器有效宽度为 <strong>4</strong>，故存在 <strong>16 个可编程优先级</strong>，有 <strong>5 种优先级分组情况</strong>：</p>
+<img src="/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/2.png" class="" title="图2">
+
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> NVIC_PRIORITYGROUP_0  ((uint32_t)0x00000007) <span class="comment">/* 0 bit 抢占优先级, 4 bits 子优先级 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NVIC_PRIORITYGROUP_1  ((uint32_t)0x00000006) <span class="comment">/* 1 bit  抢占优先级, 3 bits 子优先级 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NVIC_PRIORITYGROUP_2  ((uint32_t)0x00000005) <span class="comment">/* 2 bits 抢占优先级, 2 bits 子优先级 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NVIC_PRIORITYGROUP_3  ((uint32_t)0x00000004) <span class="comment">/* 3 bits 抢占优先级, 1 bit  子优先级 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> NVIC_PRIORITYGROUP_4  ((uint32_t)0x00000003) <span class="comment">/* 4 bits 抢占优先级, 0 bit  子优先级 */</span></span></span><br></pre></td></tr></table></figure>
+
+<p><strong>示例</strong>：若设置优先级分组为 NVIC_PRIORITYGROUP_2，设置某中断的优先级为 5（0101），则表示：</p>
+<ul>
+<li>抢占优先级 &#x3D; 1</li>
+<li>响应优先级 &#x3D; 1</li>
+</ul>
+<h2 id="5-厂商函数差异"><a href="#5-厂商函数差异" class="headerlink" title="5. 厂商函数差异"></a>5. 厂商函数差异</h2><h3 id="GD-系列"><a href="#GD-系列" class="headerlink" title="GD 系列"></a>GD 系列</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> <span class="title function_">nvic_irq_enable</span><span class="params">(<span class="type">uint8_t</span> nvic_irq,</span></span><br><span class="line"><span class="params">                     <span class="type">uint8_t</span> nvic_irq_pre_priority,</span></span><br><span class="line"><span class="params">                     <span class="type">uint8_t</span> nvic_irq_sub_priority)</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：只能配置外设中断，不能配置如 SysTick_IRQn 的系统中断。</p>
+<h3 id="ST-系列"><a href="#ST-系列" class="headerlink" title="ST 系列"></a>ST 系列</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* 设置中断优先级（支持系统中断和外设中断） */</span></span><br><span class="line">__STATIC_INLINE <span class="type">void</span> __NVIC_SetPriority(IRQn_Type IRQn, <span class="type">uint32_t</span> priority)</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 使能中断（仅支持外设中断） */</span></span><br><span class="line">__STATIC_INLINE <span class="type">void</span> __NVIC_EnableIRQ(IRQn_Type IRQn)</span><br></pre></td></tr></table></figure>
+
+<p><strong>说明</strong>：</p>
+<ul>
+<li>ST 未提供封装的中断配置函数，可直接使用 CMSIS 函数。</li>
+<li>__NVIC_SetPriority 可配置系统中断和外设中断，</li>
+<li>__NVIC_EnableIRQ 的 IRQn 不能为负数。</li>
+</ul>
+<h2 id="6-Keil-调试中-Priority-列含义"><a href="#6-Keil-调试中-Priority-列含义" class="headerlink" title="6. Keil 调试中 Priority 列含义"></a>6. Keil 调试中 Priority 列含义</h2><p>在 Keil 的 Priority 列中，如果看到 <code>A = B s C</code> 的格式：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>A</code></td>
+<td>优先级寄存器值</td>
+</tr>
+<tr>
+<td><code>B</code></td>
+<td>抢占优先级</td>
+</tr>
+<tr>
+<td><code>C</code></td>
+<td>子优先级（需根据优先级寄存器有效宽度换算真实值）</td>
+</tr>
+</tbody></table>
+<img src="/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/3.png" class="" title="图3">
+
+<p><strong>示例</strong>：<code>16 = 2 s 1</code> 表示抢占优先级为 <strong>2</strong>，子优先级为 <strong>1</strong>（16 &lt;&lt; 4，STM32L431 优先级寄存器有效宽度为 4）。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/STM32/" rel="tag"># STM32</a>
+              <a href="/tags/Cortex-M/" rel="tag"># Cortex-M</a>
+              <a href="/tags/NVIC/" rel="tag"># NVIC</a>
+              <a href="/tags/%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7/" rel="tag"># 中断优先级</a>
+              <a href="/tags/GD32/" rel="tag"># GD32</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/" rel="prev" title="【技术排障】Flash访问延迟导致的NOP指令延时偏差问题分析">
+                  <i class="fa fa-angle-left"></i> 【技术排障】Flash访问延迟导致的NOP指令延时偏差问题分析
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">约瑟文</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>

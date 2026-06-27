@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#222" media="(prefers-color-scheme: dark)"><meta name="generator" content="Hexo 7.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"haojosephwen.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="在使用nop指令实现延时时，我们发现实际执行时间远高于预期。通过反汇编和查阅手册，我们找到了问题的根源：Flash 访问延迟导致的指令执行偏差。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【技术排障】Flash访问延迟导致的NOP指令延时偏差问题分析">
+<meta property="og:url" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="约瑟文的技术博客">
+<meta property="og:description" content="在使用nop指令实现延时时，我们发现实际执行时间远高于预期。通过反汇编和查阅手册，我们找到了问题的根源：Flash 访问延迟导致的指令执行偏差。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/1.png">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/2.png">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/3.png">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/4.png">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/5.png">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/6.png">
+<meta property="article:published_time" content="2026-06-27T14:27:24.000Z">
+<meta property="article:modified_time" content="2026-06-27T14:34:39.150Z">
+<meta property="article:author" content="约瑟文">
+<meta property="article:tag" content="FLASH">
+<meta property="article:tag" content="STM32">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/1.png">
+
+
+<link rel="canonical" href="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/","path":"2026/06/27/【技术排障】Flash访问延迟导致的NOP指令延时偏差问题分析/","title":"【技术排障】Flash访问延迟导致的NOP指令延时偏差问题分析"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【技术排障】Flash访问延迟导致的NOP指令延时偏差问题分析 | 约瑟文的技术博客</title>
+  
+
+
+
+
+
+
+
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous" defer></script>
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 等待 mermaid 加载完成
+      function waitForMermaid(callback) {
+        if (typeof mermaid !== 'undefined') {
+          callback();
+        } else {
+          setTimeout(function() { waitForMermaid(callback); }, 100);
+        }
+      }
+      
+      waitForMermaid(function() {
+        // 查找所有 Mermaid 代码块（多种可能的选择器）
+        var selectors = [
+          'pre code.language-mermaid',
+          'pre .mermaid',
+          '.highlight .mermaid',
+          'pre[data-lang="mermaid"] code'
+        ];
+        
+        var elements = [];
+        selectors.forEach(function(sel) {
+          var found = document.querySelectorAll(sel);
+          found.forEach(function(el) {
+            elements.push(el);
+          });
+        });
+        
+        // 去重
+        var uniqueElements = [];
+        elements.forEach(function(el) {
+          if (uniqueElements.indexOf(el) === -1) {
+            uniqueElements.push(el);
+          }
+        });
+        
+        if (uniqueElements.length === 0) return;
+        
+        // 替换代码块为 mermaid 容器
+        uniqueElements.forEach(function(element) {
+          var pre = element.closest('pre');
+          if (!pre) return;
+          
+          var code = element.textContent || element.innerText;
+          
+          var container = document.createElement('div');
+          container.className = 'mermaid';
+          container.textContent = code;
+          
+          pre.parentNode.replaceChild(container, pre);
+        });
+        
+        // 初始化并渲染
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'default'
+        });
+        
+        mermaid.run();
+      });
+    });
+  </script>
+
+
+
+
+  
+
+
+
+
+  
+
+  <script class="next-config" data-name="enableMath" type="application/json">true</script><script class="next-config" data-name="mathjax" type="application/json">{"enable":true,"tags":"all","js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js","integrity":"sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI="}}</script>
+<script src="/js/third-party/math/mathjax.js" defer></script>
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+<!-- hexo injector head_end end --></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta header-site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">约瑟文的技术博客</p>
+      <i class="logo-line"></i>
+    </a>
+      <p class="site-subtitle" itemprop="description">嵌入式开发与物联网笔记</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="搜索" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">一、问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">二、问题分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%8F%8D%E6%B1%87%E7%BC%96"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 反汇编</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-Flash-%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E6%9C%BA%E5%88%B6%E5%88%86%E6%9E%90"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 Flash 访问延迟机制分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E6%8C%87%E4%BB%A4%E9%A2%84%E5%8F%96%E4%B8%8E%E6%B5%81%E6%B0%B4%E7%BA%BF%E6%89%A7%E8%A1%8C"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 指令预取与流水线执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E9%AA%8C%E8%AF%81%E5%88%86%E6%9E%90"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 验证分析</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">三、总结</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          
+
+<!-- 上部：博客信息 + 导航菜单 -->
+<div class="sidebar-top-section">
+  <div class="site-brand">
+    <div class="site-meta">
+      <a class="site-title-link" href="/">
+        <h1 class="site-title">约瑟文的技术博客</h1>
+      </a>
+      <p class="site-subtitle">嵌入式开发与物联网笔记</p>
+    </div>
+  </div>
+  <nav class="site-nav sidebar-menu">
+    <ul class="menu">
+        <li class="menu-item menu-item-home">
+          <a href="/">
+            <i class="fa fa-home fa-fw"></i>
+            <span>首页</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/">
+            <i class="fa fa-tags fa-fw"></i>
+            <span>标签</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/">
+            <i class="fa fa-th fa-fw"></i>
+            <span>分类</span>
+          </a>
+        </li>
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/">
+            <i class="fa fa-archive fa-fw"></i>
+            <span>归档</span>
+          </a>
+        </li>
+    </ul>
+  </nav>
+</div>
+
+<!-- 分隔线 -->
+<div class="sidebar-divider"></div>
+
+<!-- 下部：作者信息 + 统计 + 社交链接 -->
+<div class="sidebar-bottom-section">
+  <div class="site-author">
+      <img class="site-author-image" src="/images/avatar.jpg">
+    <p class="site-author-name">约瑟文</p>
+  </div>
+  <div class="links-of-author sidebar-social">
+      <span class="links-of-author-item">
+        <a href="https://github.com/HaoJosephWen" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;HaoJosephWen" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:2735645434@qq.com" title="E-Mail → mailto:2735645434@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+  </div>
+  <div class="site-state-wrap">
+    <nav class="site-state">
+        <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+            <span class="site-state-item-count">11</span>
+            <span class="site-state-item-name">文章</span>
+          </a>
+        </div>
+        <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+            <span class="site-state-item-count">3</span>
+            <span class="site-state-item-name">分类</span>
+          </a>
+        </div>
+        <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+            <span class="site-state-item-count">30</span>
+            <span class="site-state-item-name">标签</span>
+          </a>
+        </div>
+    </nav>
+  </div>
+</div>
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="约瑟文">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="约瑟文的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【技术排障】Flash访问延迟导致的NOP指令延时偏差问题分析 | 约瑟文的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【技术排障】Flash访问延迟导致的NOP指令延时偏差问题分析
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+      
+
+      <time title="创建时间：2026-06-27 22:27:24 / 修改时间：22:34:39" itemprop="dateCreated datePublished" datetime="2026-06-27T22:27:24+08:00">2026-06-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">嵌入式开发</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>在使用nop指令实现延时时，我们发现实际执行时间远高于预期。通过反汇编和查阅手册，我们找到了问题的根源：Flash 访问延迟导致的指令执行偏差。</p>
+<span id="more"></span>
+<h2 id="一、问题描述"><a href="#一、问题描述" class="headerlink" title="一、问题描述"></a>一、问题描述</h2><p>在项目开发过程中，与某外部设备进行通信时，需将锁存信号引脚拉高并保持 100ns 以确保数据成功传输。基于单片机系统时钟设置为 80MHz（单个时钟周期为 12.5ns）这一条件，使用 8 条 NOP 指令（单周期指令）可实现约 100ns 的延时。具体实现代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> DELAY_NS()              \</span></span><br><span class="line"><span class="meta">    __nop(); __nop(); __nop(); __nop(); \</span></span><br><span class="line"><span class="meta">    __nop(); __nop(); __nop(); __nop()</span></span><br><span class="line"></span><br><span class="line">GPIOA-&gt;BSRR = LL_GPIO_PIN_1;</span><br><span class="line">DELAY_NS();</span><br><span class="line">GPIOA-&gt;BRR = LL_GPIO_PIN_1;</span><br></pre></td></tr></table></figure>
+
+<p>然而实际使用逻辑分析仪测量引脚高电平持续时间时，发现实际结果为 <strong>220ns</strong>，远高于预期的 100ns。</p>
+<img src="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/1.png" class="" title="图1">
+
+<hr>
+<h2 id="二、问题分析"><a href="#二、问题分析" class="headerlink" title="二、问题分析"></a>二、问题分析</h2><h3 id="2-1-反汇编"><a href="#2-1-反汇编" class="headerlink" title="2.1 反汇编"></a>2.1 反汇编</h3><p>对代码进行反汇编后，确认在两次电平操作之间确实插入了 8 条 NOP 指令：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">   <span class="number">772</span>:         GPIOA-&gt;BSRR = LL_GPIO_PIN_1; </span><br><span class="line"><span class="number">0x0801478E</span> <span class="number">2102</span>      MOVS          r1,#<span class="number">0x02</span></span><br><span class="line"><span class="number">0x08014790</span> F04F4290  MOV           r2,#<span class="number">0x48000000</span></span><br><span class="line"><span class="number">0x08014794</span> <span class="number">6191</span>      STR           r1,[r2,#<span class="number">0x18</span>]</span><br><span class="line">   <span class="number">773</span>:         DELAY_NS(); </span><br><span class="line"><span class="number">0x08014796</span> BF00      NOP           </span><br><span class="line"><span class="number">0x08014798</span> BF00      NOP           </span><br><span class="line"><span class="number">0x0801479A</span> BF00      NOP           </span><br><span class="line"><span class="number">0x0801479C</span> BF00      NOP           </span><br><span class="line"><span class="number">0x0801479E</span> BF00      NOP           </span><br><span class="line"><span class="number">0x080147A0</span> BF00      NOP           </span><br><span class="line"><span class="number">0x080147A2</span> BF00      NOP           </span><br><span class="line"><span class="number">0x080147A4</span> BF00      NOP           </span><br><span class="line">   <span class="number">774</span>:         GPIOA-&gt;BRR = LL_GPIO_PIN_1; </span><br><span class="line"><span class="number">0x080147A6</span> <span class="number">2102</span>      MOVS          r1,#<span class="number">0x02</span></span><br><span class="line"><span class="number">0x080147A8</span> F04F4290  MOV           r2,#<span class="number">0x48000000</span></span><br><span class="line"><span class="number">0x080147AC</span> <span class="number">6291</span>      STR           r1,[r2,#<span class="number">0x28</span>]</span><br></pre></td></tr></table></figure>
+
+<p>导致实际延时远高于理论值的主要原因与 <strong>Flash 存储器的访问延迟</strong>有关。由于 CPU 指令执行速度高于从 Flash 中读取指令的速度，因此实际执行时间受到 Flash 访问等待状态的显著影响。</p>
+<h3 id="2-2-Flash-访问延迟机制分析"><a href="#2-2-Flash-访问延迟机制分析" class="headerlink" title="2.2 Flash 访问延迟机制分析"></a>2.2 Flash 访问延迟机制分析</h3><p>为正确从 Flash 读取指令，必须根据 CPU 时钟频率（HCLK）及芯片内部工作电压（VCORE），在闪存访问控制寄存器（FLASH_ACR）中配置正确的等待状态数（LATENCY）。根据 STM32L4 系列芯片参考手册，在 80MHz 频率下需配置 <strong>4 个等待状态</strong>。</p>
+<img src="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/2.png" class="" title="图2">
+
+<p>本项目 CPU 时钟频率为 80 MHz，根据上表 FLASH_ACR 寄存器配置应配置为 4 等待状态（WS），实际上在程序的初始化代码中，也确实配置了 4WS。</p>
+<img src="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/3.png" class="" title="图3">
+
+<h3 id="2-3-指令预取与流水线执行"><a href="#2-3-指令预取与流水线执行" class="headerlink" title="2.3 指令预取与流水线执行"></a>2.3 指令预取与流水线执行</h3><p>Cortex-M4 内核通过 ICode 总线获取指令，并通过 DCode 总线访问字面量池（常量与数据）。闪存预取模块用于提高 ICode 总线的访问效率：每次 Flash 读取操作返回 64 位数据，可包含两条 32 位指令或四条 16 位指令。该 64 位指令行会被保存在缓冲区中。</p>
+<p>在顺序执行代码的情况下，执行前一个已读取指令行至少需要两个 CPU 周期。当 CPU 请求当前指令行时，预取机制可提前读取下一顺序指令行。该功能通过设置 FLASH_ACR 寄存器的 PRFTEN 位启用，并在 Flash 访问需要至少 1 个等待状态时发挥作用。</p>
+<p>参考STM32L4xx技术手册中提供的时序示意图（以3等待状态为例），在<strong>未启用预取功能或预取失败</strong>的情况下，顺序执行<strong>8条16位指令</strong>总共需要14个系统时钟周期。</p>
+<img src="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/4.png" class="" title="图4">
+
+<p>在本项目中，Flash 访问配置为 4 等待状态。执行 8 条 NOP 指令实际需要 <strong>17 个时钟周期</strong>，即：</p>
+<p>17 × 12.5 ns &#x3D; 212.5 ns</p>
+<p>加上 GPIO 电平操作本身约 10ns 的硬件延迟，总延时约为 <strong>222.5 ns</strong>，与实际测得的 220ns 高度吻合。</p>
+<p>时序示意图：</p>
+<img src="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/5.png" class="" title="图5">
+
+<h3 id="2-4-验证分析"><a href="#2-4-验证分析" class="headerlink" title="2.4 验证分析"></a>2.4 验证分析</h3><p>根据上述推断，若将 NOP 指令数量增加至 12 条，预计总时钟周期数约为 21 个，因此高电平持续时间应为：</p>
+<p>21 × 12.5 ns + 10 ns ≈ 272.5 ns</p>
+<img src="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91Flash%E8%AE%BF%E9%97%AE%E5%BB%B6%E8%BF%9F%E5%AF%BC%E8%87%B4%E7%9A%84NOP%E6%8C%87%E4%BB%A4%E5%BB%B6%E6%97%B6%E5%81%8F%E5%B7%AE%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/6.png" class="" title="图6">
+
+<p>实际测量结果为 <strong>270ns</strong>，进一步验证了 Flash 访问延迟对指令执行效率的显著影响。</p>
+<hr>
+<h2 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h2><p>在 80MHz 主频的单片机系统中，期望通过 NOP 指令实现纳秒级精确延时极为困难。实际延时受到以下多因素影响：</p>
+<ol>
+<li><strong>Flash 访问延迟</strong>：需根据时钟频率配置等待状态，显著增加指令提取时间；</li>
+<li><strong>指令预取机制</strong>：虽提高整体效率，但引入非确定性执行周期；</li>
+<li><strong>流水线行为</strong>：指令执行并非严格的单周期完成。</li>
+</ol>
+<p>考虑到 Flash 存储器的访问延迟，实际执行时间通常显著超过仅计算指令执行所需的时钟周期。对于纳秒级精确定时需求，建议使用硬件定时器或将延时代码放置在 SRAM 中执行。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/FLASH/" rel="tag"># FLASH</a>
+              <a href="/tags/STM32/" rel="tag"># STM32</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91GD32E11x%20PA15%20%E5%BC%95%E8%84%9A%20PWM%20%E8%BE%93%E5%87%BA%E5%A4%B1%E8%B4%A5%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90%EF%BC%9AJTAG%20%E8%B0%83%E8%AF%95%E6%8E%A5%E5%8F%A3%E5%BC%95%E8%84%9A%E5%86%B2%E7%AA%81/" rel="prev" title="【技术排障】GD32E11x PA15 引脚 PWM 输出失败问题分析：JTAG 调试接口引脚冲突">
+                  <i class="fa fa-angle-left"></i> 【技术排障】GD32E11x PA15 引脚 PWM 输出失败问题分析：JTAG 调试接口引脚冲突
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/06/27/%E3%80%90%E7%9F%A5%E8%AF%86%E6%80%BB%E7%BB%93%E3%80%91STM32%E4%B8%8EGD32-NVIC-%E4%B8%AD%E6%96%AD%E4%BC%98%E5%85%88%E7%BA%A7%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/" rel="next" title="【知识总结】STM32与GD32 NVIC 中断优先级配置详解">
+                  【知识总结】STM32与GD32 NVIC 中断优先级配置详解 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">约瑟文</span>
+  </div>
+  <div class="powered-by">由 <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+</body>
+</html>
