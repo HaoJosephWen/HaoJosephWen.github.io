@@ -20,22 +20,33 @@
 
 <script class="next-config" data-name="main" type="application/json">{"hostname":"haojosephwen.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":true,"version":"8.27.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"stackoverflow-dark"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"}}</script><script src="/js/config.js" defer></script>
 
-    <meta property="og:type" content="website">
-<meta property="og:title" content="约瑟文的技术博客">
-<meta property="og:url" content="https://haojosephwen.github.io/archives/2026/06/index.html">
+    <meta name="description" content="debug调试时，发现程序无法从Reset_Handler启动，而是停在了0x1FFF2D20地址处。这通常是因为芯片处于Bootloader模式或引导配置有问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【技术排障】程序无法从Reset_Handler启动的原因分析与解决">
+<meta property="og:url" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/index.html">
 <meta property="og:site_name" content="约瑟文的技术博客">
+<meta property="og:description" content="debug调试时，发现程序无法从Reset_Handler启动，而是停在了0x1FFF2D20地址处。这通常是因为芯片处于Bootloader模式或引导配置有问题。">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/1.png">
+<meta property="og:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/2.png">
+<meta property="article:published_time" content="2026-06-27T08:11:55.000Z">
+<meta property="article:modified_time" content="2026-06-27T09:36:47.806Z">
 <meta property="article:author" content="约瑟文">
+<meta property="article:tag" content="STM32L431">
+<meta property="article:tag" content="Keil">
+<meta property="article:tag" content="Reset_Handler">
+<meta property="article:tag" content="Bootloader">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/1.png">
 
 
-<link rel="canonical" href="https://haojosephwen.github.io/archives/2026/06/">
+<link rel="canonical" href="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/">
 
 
-<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":false,"lang":"zh-CN","comments":"","permalink":"","path":"archives/2026/06/index.html","title":""}</script>
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/","path":"2026/06/27/【技术排障】程序无法从Reset-Handler启动的原因分析与解决/","title":"【技术排障】程序无法从Reset_Handler启动的原因分析与解决"}</script>
 
 <script class="next-config" data-name="calendar" type="application/json">""</script>
-<title>归档 | 约瑟文的技术博客</title>
+<title>【技术排障】程序无法从Reset_Handler启动的原因分析与解决 | 约瑟文的技术博客</title>
   
 
 
@@ -155,7 +166,7 @@
 
     <a href="/" class="brand" rel="start">
       <i class="logo-line"></i>
-      <h1 class="site-title">约瑟文的技术博客</h1>
+      <p class="site-title">约瑟文的技术博客</p>
       <i class="logo-line"></i>
     </a>
       <p class="site-subtitle" itemprop="description">嵌入式开发与物联网笔记</p>
@@ -182,7 +193,7 @@
   
   <aside class="sidebar">
 
-    <div class="sidebar-inner sidebar-overview-active">
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
       <ul class="sidebar-nav">
         <li class="sidebar-nav-toc">
           文章目录
@@ -195,6 +206,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">问题描述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E6%9E%90"><span class="nav-number">2.</span> <span class="nav-text">分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">解决方法</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -291,89 +303,115 @@
 
     </div>
 
-    <div class="main-inner archive posts-collapse">
+    <div class="main-inner post posts-expand">
 
 
   
-  
-  
-  <div class="post-block">
-    <div class="post-content">
-      <div class="collection-title">
-        <span class="collection-header">嗯..! 目前共计 7 篇日志。 继续努力。</span>
-      </div>
 
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://haojosephwen.github.io/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="约瑟文">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="约瑟文的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【技术排障】程序无法从Reset_Handler启动的原因分析与解决 | 约瑟文的技术博客">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【技术排障】程序无法从Reset_Handler启动的原因分析与解决
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
       
-    <div class="collection-year">
-      <span class="collection-header">2026<span class="collection-year-count">7</span></span>
+
+      <time title="创建时间：2026-06-27 16:11:55 / 修改时间：17:36:47" itemprop="dateCreated datePublished" datetime="2026-06-27T16:11:55+08:00">2026-06-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">分类于</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%BC%80%E5%8F%91/" itemprop="url" rel="index"><span itemprop="name">嵌入式开发</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>debug调试时，发现程序无法从Reset_Handler启动，而是停在了0x1FFF2D20地址处。这通常是因为芯片处于Bootloader模式或引导配置有问题。</p>
+<span id="more"></span>
+
+<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>STM32L431在Keil中开启Debug模式时PC指针停在0x1FFF2D20而不是从Reset_Handler开始运行</p>
+<img src="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/1.png" class="" title="图1">
+
+<h2 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h2><p>0x1FFF2D20地址属于STM32L4的系统存储器（System Memory），通常是Bootloader区域。这表明芯片可能处于Bootloader模式或引导配置有问题。</p>
+<img src="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/2.png" class="" title="图2">
+
+<h2 id="解决方法"><a href="#解决方法" class="headerlink" title="解决方法"></a>解决方法</h2><p>使用J-LINK或ST-LINK Utility工具，执行Full Chip Erase，重新下载程序并调试</p>
+
     </div>
 
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta-container">
-        <time itemprop="dateCreated"
-              datetime="2026-06-27T21:07:42+08:00"
-              content="2026-06-27">
-          06-27
-        </time>
-      </div>
+    
+    
+    
 
-      <div class="post-title">
-          <a class="post-title-link" href="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91GD32E11x%E5%A4%8D%E7%94%A8%E5%BC%95%E8%84%9A%E9%85%8D%E7%BD%AE%E5%86%B2%E7%AA%81%E5%AF%BC%E8%87%B4I2C%E9%80%9A%E4%BF%A1%E4%B8%ADSCL%E6%97%A0%E6%97%B6%E9%92%9F%E4%BF%A1%E5%8F%B7/" itemprop="url">
-            <span itemprop="name">【技术排障】GD32E11x复用引脚配置冲突导致I2C通信中SCL无时钟信号</span>
-          </a>
-      </div>
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/STM32L431/" rel="tag"># STM32L431</a>
+              <a href="/tags/Keil/" rel="tag"># Keil</a>
+              <a href="/tags/Reset-Handler/" rel="tag"># Reset_Handler</a>
+              <a href="/tags/Bootloader/" rel="tag"># Bootloader</a>
+          </div>
 
-      
-    </header>
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E4%B8%B2%E5%8F%A3%20DMA%20%E6%8E%A5%E6%94%B6%E7%A9%BA%E7%AA%97%E6%9C%9F%E5%AF%BC%E8%87%B4%E8%BF%9E%E7%BB%AD%E9%80%9A%E8%AE%AF%E4%B8%AD%E5%81%B6%E5%8F%91%E6%80%A7%E4%B8%A2%E5%B8%A7%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/" rel="prev" title="【技术排障】串口 DMA 接收空窗期导致连续通讯中偶发性丢帧问题分析">
+                  <i class="fa fa-angle-left"></i> 【技术排障】串口 DMA 接收空窗期导致连续通讯中偶发性丢帧问题分析
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91GD32E11x%E5%A4%8D%E7%94%A8%E5%BC%95%E8%84%9A%E9%85%8D%E7%BD%AE%E5%86%B2%E7%AA%81%E5%AF%BC%E8%87%B4I2C%E9%80%9A%E4%BF%A1%E4%B8%ADSCL%E6%97%A0%E6%97%B6%E9%92%9F%E4%BF%A1%E5%8F%B7/" rel="next" title="【技术排障】GD32E11x复用引脚配置冲突导致I2C通信中SCL无时钟信号">
+                  【技术排障】GD32E11x复用引脚配置冲突导致I2C通信中SCL无时钟信号 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
   </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta-container">
-        <time itemprop="dateCreated"
-              datetime="2026-06-27T16:11:55+08:00"
-              content="2026-06-27">
-          06-27
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E7%A8%8B%E5%BA%8F%E6%97%A0%E6%B3%95%E4%BB%8EReset-Handler%E5%90%AF%E5%8A%A8%E7%9A%84%E5%8E%9F%E5%9B%A0%E5%88%86%E6%9E%90%E4%B8%8E%E8%A7%A3%E5%86%B3/" itemprop="url">
-            <span itemprop="name">【技术排障】程序无法从Reset_Handler启动的原因分析与解决</span>
-          </a>
-      </div>
-
-      
-    </header>
-  </article>
-
-  <article itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
-      <div class="post-meta-container">
-        <time itemprop="dateCreated"
-              datetime="2026-06-27T00:41:30+08:00"
-              content="2026-06-27">
-          06-27
-        </time>
-      </div>
-
-      <div class="post-title">
-          <a class="post-title-link" href="/2026/06/27/%E3%80%90%E6%8A%80%E6%9C%AF%E6%8E%92%E9%9A%9C%E3%80%91%E4%B8%B2%E5%8F%A3%20DMA%20%E6%8E%A5%E6%94%B6%E7%A9%BA%E7%AA%97%E6%9C%9F%E5%AF%BC%E8%87%B4%E8%BF%9E%E7%BB%AD%E9%80%9A%E8%AE%AF%E4%B8%AD%E5%81%B6%E5%8F%91%E6%80%A7%E4%B8%A2%E5%B8%A7%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90/" itemprop="url">
-            <span itemprop="name">【技术排障】串口 DMA 接收空窗期导致连续通讯中偶发性丢帧问题分析</span>
-          </a>
-      </div>
-
-      
-    </header>
-  </article>
+</div>
 
 
-    </div>
-  </div>
-  
-  
-  
+
+
+
 
 </div>
   </main>
